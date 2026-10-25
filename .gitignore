@@ -1,0 +1,4 @@
+# 忽略特定的大数据文件
+re/BTCUSDT_futures_1m_all.csv
+re/BianceData/BTCUSDT_1m_all.csv
+CryptoCoin_Futures/BTCUSDT_futures_1m_all.csv
