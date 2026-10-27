@@ -7,14 +7,14 @@ import os
 # 🚀 新增：动态实体-影线比例过滤（实体涨幅必须 >= 上影线幅度的 N 倍）
 # 🛡️ 修复：拒绝空头趋势下的弱势贴脸买入，强制要求均线拐头向上
 # 🌟 终极修复：新增“全K线悬空突破”豁免权，绝不错杀 2020-10-18 完美起爆点
-# 🚧 新增防线：上方长线均线压制检测，拒绝 2022-02-27 这种“撞墙单”
+# 🚧 新增防线：上方长线均线压制检测，拒绝 2022-02-27 这种“撞墙单”  最终版
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-fileName = "BTCUSDT_3D_merged.csv"
+fileName = "BTCUSDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\MergedData\{fileName}"
+    DATA_PATH = rf"D:\Python\BianceStrategy\re\BTCUSDT_futures_3d.csv"
 
 INITIAL_CAPITAL = 10000.0
 LEVERAGE = 5.0

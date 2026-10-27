@@ -13,10 +13,10 @@ import os
 fileName = "BTCUSDT_3D_merged.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\MergedData\{fileName}"
+    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\BTC\MergedData\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 5.0
+LEVERAGE = 10.0
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005
