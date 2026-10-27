@@ -4,7 +4,7 @@ import os
 
 # ================= 1. 路径设置 =================
 PARQUET_DIR = r"D:\Python\BianceStrategy\CryptoCoin_Futures\raw\klines\market=futures\symbol=BTCUSDT\interval=1m"
-CSV_DIR = r"D:\Python\BianceStrategy\re\BianceData\csv"
+CSV_DIR = r"/re/BianceData/BTC/csv"
 OUTPUT_DIR = r"D:\Python\BianceStrategy\re\BianceData\csvYear_All"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

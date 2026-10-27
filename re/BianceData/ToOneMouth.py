@@ -4,7 +4,7 @@ import os
 
 # ================= 1. 路径设置 =================
 INPUT_DIR = r"D:\Python\BianceStrategy\re\BianceData\csvYear_All"
-OUTPUT_DIR = r"D:\Python\BianceStrategy\re\BianceData\1M"
+OUTPUT_DIR = r"/re/BianceData/BTC/1M"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

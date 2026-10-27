@@ -3,7 +3,7 @@ import pandas as pd
 
 # 1. 设定基础路径
 base_dir = r"D:\Python\BianceStrategy\re\BianceData"
-output_dir = os.path.join(base_dir, "MergedData")
+output_dir = os.path.join(base_dir, "BTC/MergedData")
 
 os.makedirs(output_dir, exist_ok=True)
 

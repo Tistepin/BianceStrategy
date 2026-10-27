@@ -6,13 +6,13 @@ import io
 from datetime import datetime
 
 # ================= 1. 参数设置 =================
-SYMBOL = "BTCUSDT"
+SYMBOL = "ETHUSDT"
 TIMEFRAME = "1m"  # 1分钟线
-START_YEAR = 2020  # 起始年份
+START_YEAR = 2019  # 起始年份
 START_MONTH = 1  # 起始月份
 
 # 🚨 目标存储根地址
-BASE_SAVE_DIR = r"D:\Python\BianceStrategy\re\BianceData"
+BASE_SAVE_DIR = r"D:\Python\BianceStrategy\re\BianceData\ETH"
 ZIP_SAVE_DIR = os.path.join(BASE_SAVE_DIR, "zip")
 CSV_SAVE_DIR = os.path.join(BASE_SAVE_DIR, "csv")
 
@@ -46,61 +46,61 @@ os.makedirs(CSV_SAVE_DIR, exist_ok=True)
 all_data = []
 
 # 循环年份和月份
-for year in range(START_YEAR, end_year + 1):
-    month_range = range(1, end_month + 1) if year == end_year else range(1, 13)
-
-    for month in month_range:
-        file_name = f"{SYMBOL}-{TIMEFRAME}-{year}-{month:02d}.zip"
-        url = f"https://data.binance.vision/data/futures/um/monthly/klines/{SYMBOL}/{TIMEFRAME}/{file_name}"
-
-        # 定义当前的 zip 路径和 csv 路径
-        zip_path = os.path.join(ZIP_SAVE_DIR, file_name)
-        csv_filename = file_name.replace('.zip', '.csv')
-        csv_path = os.path.join(CSV_SAVE_DIR, csv_filename)
-
-        # 如果 csv 已经存在，说明之前下载过了，直接读取合并，跳过下载（断点续传功能）
-        if os.path.exists(csv_path):
-            print(f"已存在: {csv_filename} (跳过下载)")
-            df = pd.read_csv(csv_path, header=None)
-            all_data.append(df)
-            continue
-
-        print(f"正在下载: {file_name} ...", end=" ")
-
-        try:
-            response = requests.get(url, timeout=30)
-            if response.status_code == 200:
-                # 1. 保存原始 ZIP 文件
-                with open(zip_path, 'wb') as f_zip:
-                    f_zip.write(response.content)
-
-                # 2. 从内存解压并读取
-                with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-                    internal_csv_name = z.namelist()[0]
-                    with z.open(internal_csv_name) as f:
-                        # 读取数据，忽略表头
-                        df = pd.read_csv(f, header=None)
-
-                        # 过滤表头文字行
-                        df = df[pd.to_numeric(df[0], errors='coerce').notna()]
-
-                        # 只取前 6 列 (时间, 开, 高, 低, 收, 量)
-                        df = df.iloc[:, :6]
-
-                        # 3. 将解压出来的单月数据保存为 CSV
-                        df.to_csv(csv_path, index=False, header=False)
-
-                        all_data.append(df)
-                        print("✅ 成功")
-            elif response.status_code == 404:
-                print("⚠️ 文件不存在 (跳过)")
-            else:
-                print(f"❌ 失败 (状态码: {response.status_code})")
-        except Exception as e:
-            print(f"❌ 报错: {e}")
+# for year in range(START_YEAR, end_year + 1):
+#     month_range = range(1, end_month + 1) if year == end_year else range(1, 13)
+#
+#     for month in month_range:
+#         file_name = f"{SYMBOL}-{TIMEFRAME}-{year}-{month:02d}.zip"
+#         url = f"https://data.binance.vision/data/futures/um/monthly/klines/{SYMBOL}/{TIMEFRAME}/{file_name}"
+#
+#         # 定义当前的 zip 路径和 csv 路径
+#         zip_path = os.path.join(ZIP_SAVE_DIR, file_name)
+#         csv_filename = file_name.replace('.zip', '.csv')
+#         csv_path = os.path.join(CSV_SAVE_DIR, csv_filename)
+#
+#         # 如果 csv 已经存在，说明之前下载过了，直接读取合并，跳过下载（断点续传功能）
+#         if os.path.exists(csv_path):
+#             print(f"已存在: {csv_filename} (跳过下载)")
+#             df = pd.read_csv(csv_path, header=None)
+#             all_data.append(df)
+#             continue
+#
+#         print(f"正在下载: {file_name} ...", end=" ")
+#
+#         try:
+#             response = requests.get(url, timeout=30)
+#             if response.status_code == 200:
+#                 # 1. 保存原始 ZIP 文件
+#                 with open(zip_path, 'wb') as f_zip:
+#                     f_zip.write(response.content)
+#
+#                 # 2. 从内存解压并读取
+#                 with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+#                     internal_csv_name = z.namelist()[0]
+#                     with z.open(internal_csv_name) as f:
+#                         # 读取数据，忽略表头
+#                         df = pd.read_csv(f, header=None)
+#
+#                         # 过滤表头文字行
+#                         df = df[pd.to_numeric(df[0], errors='coerce').notna()]
+#
+#                         # 只取前 6 列 (时间, 开, 高, 低, 收, 量)
+#                         df = df.iloc[:, :6]
+#
+#                         # 3. 将解压出来的单月数据保存为 CSV
+#                         df.to_csv(csv_path, index=False, header=False)
+#
+#                         all_data.append(df)
+#                         print("✅ 成功")
+#             elif response.status_code == 404:
+#                 print("⚠️ 文件不存在 (跳过)")
+#             else:
+#                 print(f"❌ 失败 (状态码: {response.status_code})")
+#         except Exception as e:
+#             print(f"❌ 报错: {e}")
 
 # ================= 3. 数据清洗与合并 =================
-if all_data:
+if True:
     print("\n正在合并和清洗所有数据...")
     final_df = pd.concat(all_data, ignore_index=True)
     final_df.columns = ['time', 'open', 'high', 'low', 'close', 'volume']
