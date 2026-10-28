@@ -2,22 +2,24 @@ import pandas as pd
 import glob
 import os
 
+
 # ================= 路径配置 =================
+# 币种前缀（用于输出命名）
+COIN = "PUMP"
 # 你的按月数据文件夹（根据你的截图，应该是这个路径）
-SOURCE_DIR = r"D:\Python\BianceStrategy\re\BianceData\ETHUSDT\1m"
+SOURCE_DIR = rf"D:\Python\BianceStrategy\re\BianceData\{COIN}USDT\1m"
 # 合并后按年保存的文件夹（模拟你图3的结构）
-TARGET_DIR = r"D:\Python\BianceStrategy\re\BianceData\ETHUSDT\csvYear_All"
+TARGET_DIR = rf"D:\Python\BianceStrategy\re\BianceData\{COIN}USDT\csvYear_All"
 
 # 自动创建目标文件夹
 os.makedirs(TARGET_DIR, exist_ok=True)
 
-# 币种前缀（用于输出命名）
-COIN = "ETHUSDT"
+
 
 # ================= 1. 查找所有月份文件 =================
 print(f"正在扫描文件夹：{SOURCE_DIR}")
 # 匹配所有包含 ethusdt_1m_futures_ 的 csv 文件
-all_files = glob.glob(os.path.join(SOURCE_DIR, f"{COIN}_1m_futures_*.csv"))
+all_files = glob.glob(os.path.join(SOURCE_DIR, f"{COIN}USDT_1m_futures_*.csv"))
 all_files.sort()  # 按名字排序，确保时间顺序
 
 if not all_files:
@@ -75,7 +77,7 @@ for year, df_list in yearly_dfs.items():
     merged_df['time'] = pd.to_datetime(merged_df['time'])
 
     # 保存文件：例如 ETHUSDT_2019.csv
-    out_file = os.path.join(TARGET_DIR, f"{COIN}_{year}.csv")
+    out_file = os.path.join(TARGET_DIR, f"{COIN}USDT_{year}.csv")
     merged_df.to_csv(out_file, index=False, encoding='utf-8-sig')
 
     print(f"✨ [{year}年] 合并完成！总条数: {len(merged_df)} 条，已保存至: {out_file}")

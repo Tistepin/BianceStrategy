@@ -4,7 +4,8 @@ import numpy as np
 # ======================================================================
 # 参数区
 # ======================================================================
-CSV_PATH = r"F:\python\BianceStrategy\re\BianceData\MergedData\BTCUSDT_3D_merged.csv"
+CoinName = "BTC"
+CSV_PATH = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{CoinName}USDT_futures_3d.csv"
 OUT_PATH = "../short_trades_3d.csv"
 
 INIT_BALANCE = 10000.0

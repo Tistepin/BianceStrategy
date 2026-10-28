@@ -2,3 +2,5 @@
 re/BTCUSDT_futures_1m_all.csv
 re/BianceData/BTCUSDT_1m_all.csv
 CryptoCoin_Futures/BTCUSDT_futures_1m_all.csv
+
+re/BianceData/**/*_1m_*.csv

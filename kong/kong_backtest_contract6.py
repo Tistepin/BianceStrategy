@@ -4,7 +4,8 @@ import numpy as np
 # ======================================================================
 # 参数区 最终版 空
 # ======================================================================
-CSV_PATH = r"F:\python\BianceStrategy\re\BianceData\BTC\MergedData\BTCUSDT_3D_merged.csv"
+CoinName = "BTC"
+CSV_PATH = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{CoinName}USDT_futures_3d.csv"
 OUT_PATH = "../short_trades_3d.csv"
 
 INIT_BALANCE = 10000.0
@@ -275,6 +276,8 @@ def pass_ma180_filters(i, open_price):
         if MAX_DIST_MA180 > 0 and open_price < ma180_sig:
             dist_below = (ma180_sig - open_price) / open_price
             if dist_below > MAX_DIST_MA180:
+                print(
+                    f"{df.loc[i, 'time']} 开仓{open_price:.2f} MA180={ma180_sig:.2f} 下方距离{dist_below * 100:.2f}% 被MAX_DIST_MA180挡")
                 return False
 
     if MA180_SLOPE_MAX_UP is not None:

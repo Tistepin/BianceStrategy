@@ -2,14 +2,15 @@ import pandas as pd
 import glob
 import os
 
+CoinName ="PUMP"
 # ================= 路径配置 =================
-SOURCE_DIR = r"F:\Python\BianceStrategy\re\BianceData\ETHUSDT\csvYear_All"
-TARGET_FILE = r"F:\Python\BianceStrategy\re\BianceData\ETHUSDT\3d\ETHUSDT_futures_3d.csv"
+SOURCE_DIR = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\csvYear_All"
+TARGET_FILE = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{CoinName}USDT_futures_3d.csv"
 
 os.makedirs(os.path.dirname(TARGET_FILE), exist_ok=True)
 
 # ================= 1. 读取所有文件 =================
-all_files = glob.glob(os.path.join(SOURCE_DIR, "ETHUSDT_*.csv"))
+all_files = glob.glob(os.path.join(SOURCE_DIR, f"{CoinName}USDT_*.csv"))
 all_files.sort()
 
 all_3d_dfs = []

@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timezone
 
 # ===== 参数 =====
-SYMBOL = "ETHUSDT"  # 币种
+SYMBOL = "DOTUSDT"  # 币种
 INTERVAL = "1m"  # 周期
 BASE_URL = "https://fapi.binance.com"
 URL = f"{BASE_URL}/fapi/v1/klines"
@@ -211,7 +211,7 @@ def main():
 
         # 格式化月份字符串
         month_str = f"{current_year}-{current_month:02d}"
-        print(f"\n[{month_str}] 开始抓取... 范围：{month_start.strftime('%Y-%m-%d')} 到 {end_time.strftime('%Y-%m-%d')}")
+        print(f"\n[{month_str}] 开始抓取.{SYMBOL}. 范围：{month_start.strftime('%Y-%m-%d')} 到 {end_time.strftime('%Y-%m-%d')}")
 
         start_ms = int(month_start.timestamp() * 1000)
         end_ms = int(end_time.timestamp() * 1000)
@@ -240,4 +240,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    symbols_set = { "SOL","BNB","XRP","TRX","ZEC","HYPE","DOGE","LINK","XLM","ADA","UNI","NEAR","BCH","DOT","AVAX","TAO","ENA","SHIB","PUMP","QNT","AAVE",
+                   "1000PEPE","EVAA"
+
+                    }
+    for symbol in symbols_set:
+        SYMBOL=symbol+"USDT"
+        main()
