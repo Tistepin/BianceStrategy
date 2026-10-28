@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # ======================================================================
-# 参数区 最终版 空 1
+# 参数区 最终版 空
 # ======================================================================
 CSV_PATH = r"F:\python\BianceStrategy\re\BianceData\BTC\MergedData\BTCUSDT_3D_merged.csv"
 OUT_PATH = "../short_trades_3d.csv"
