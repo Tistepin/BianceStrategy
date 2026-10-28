@@ -4,7 +4,7 @@ import numpy as np
 # ======================================================================
 # 参数区
 # ======================================================================
-CSV_PATH = r"D:\python\BianceStrategy\re\BianceData\MergedData\BTCUSDT_3D_merged.csv"
+CSV_PATH = r"F:\python\BianceStrategy\re\BianceData\MergedData\BTCUSDT_3D_merged.csv"
 OUT_PATH = "short_trades_3d.csv"
 
 INIT_BALANCE = 10000.0
@@ -34,10 +34,6 @@ MA_TP_LIST = [99, 120, 180]
 MA_TP_DIST = 0.05
 MA_TP_ENABLE_MIN_DIST = 0.08
 
-# ---------- 盘中止盈容差 ----------
-# low 距均线 MA_TP_LOW_TOL 以内也算“触及”，按 low 成交
-MA_TP_LOW_TOL = 0.001
-
 MIN_DIST_MA180 = 0.03
 MAX_DIST_MA180 = 0.16
 MA180_SLOPE_LOOKBACK = 10
@@ -49,16 +45,15 @@ OPEN_ABOVE_MA21_TOL = 0.01
 
 MIN_DIST_TP_MA_PCT = 0.09
 
+# ---------- 前一根K线质量过滤 ----------
 PREV_CLOSE_TO_LOW_TH = 0.05
 PREV_ENTITY_TO_LOWER_MIN_RATIO = 2.0
 
+# ---------- 新增：持仓期间K线形态止损 ----------
+# 持仓空单时，若某根K线收盘距 MA99 <= HOLD_MA99_NEAR_TH，
+# 且下影 >= HOLD_LONG_LOWER_SHADOW_TH，则下一根开盘平空
 HOLD_MA99_NEAR_TH = 0.10
 HOLD_LONG_LOWER_SHADOW_TH = 0.04
-
-LONG_UPPER_SHADOW_TH = 0.03
-
-DEATH_CROSS_WINDOW_1A = 3
-DEATH_CROSS_1A_IGNORE_RESISTANCE = True
 
 # ======================================================================
 # 读取数据 & 计算均线
@@ -83,9 +78,6 @@ df["entity_ratio"] = np.where(
     df["entity_pct"] / df["lower_shadow_pct"],
     np.inf
 )
-
-_upper_base = df[["open", "close"]].max(axis=1)
-df["upper_shadow_pct"] = (df["high"] - _upper_base) / _upper_base
 
 df["prev_open"] = df["open"].shift(1)
 df["prev_close"] = df["close"].shift(1)
@@ -122,7 +114,7 @@ def signal_first(i):
     if not (r["is_bear"] and r["close_to_low"] < CLOSE_TO_LOW_TH):
         return False, ""
 
-    if is_death_cross_recent(i, DEATH_CROSS_WINDOW_1A):
+    if is_death_cross_recent(i, DEATH_CROSS_WINDOW):
         return True, "第一类-1A刚死叉追空"
 
     if r["ma10"] < r["ma21"] and r["close"] < r["ma10"]:
@@ -135,29 +127,6 @@ def signal_first(i):
         return True, "第一类-1C未死叉跌破双均线"
 
     return False, ""
-
-
-def signal_touch_ma_upper_shadow(i):
-    r = df.loc[i]
-    if pd.isna(r["ma10"]) or pd.isna(r["ma21"]):
-        return False, ""
-
-    if not (r["ma10"] < r["ma21"]):
-        return False, ""
-
-    if not r["is_bear"]:
-        return False, ""
-
-    if not (r["high"] >= r["ma10"] or r["high"] >= r["ma21"]):
-        return False, ""
-
-    if not (r["close"] < r["ma10"]):
-        return False, ""
-
-    if r["upper_shadow_pct"] < LONG_UPPER_SHADOW_TH:
-        return False, ""
-
-    return True, "第二类-追空:反弹触碰MA10/21长上影"
 
 
 def signal_second(i):
@@ -232,7 +201,7 @@ def signal_short(i):
     if r["is_bear"] and r["entity_ratio"] < ENTITY_TO_LOWER_MIN_RATIO:
         return False, ""
 
-    for fn in [signal_first, signal_touch_ma_upper_shadow, signal_second, signal_third]:
+    for fn in [signal_first, signal_second, signal_third]:
         ok, reason = fn(i)
         if ok:
             return True, reason
@@ -295,43 +264,27 @@ def pass_ma_tp_distance_filter(i, open_price):
 # 通用均线止盈函数
 # ======================================================================
 def find_ma_tp_intraday(row, entry):
-    """
-    盘中止盈，基于最低价：
-    1. 均线在开仓价下方，且开仓价距均线 > MA_TP_ENABLE_MIN_DIST；
-    2. low <= 均线：真正触及，按均线价成交；
-    3. low 在均线 MA_TP_LOW_TOL 容差内：算接近触及，按 low 成交；
-    4. 多条均线满足时，选价格最高的那条（最先触及）。
-    """
     candidates = []
     for p in MA_TP_LIST:
         ma_val = row.get(f"ma{p}", np.nan)
         if pd.isna(ma_val):
             continue
-
+        if entry <= ma_val:
+            continue
         if (entry - ma_val) / entry <= MA_TP_ENABLE_MIN_DIST:
             continue
-
         if row["low"] <= ma_val:
-            # 真正穿插均线，按均线价成交
-            candidates.append((ma_val, p, ma_val))
-        elif row["low"] <= ma_val * (1 + MA_TP_LOW_TOL):
-            # low 在容差内接近均线，按 low 成交
-            candidates.append((row["low"], p, row["low"]))
+            candidates.append((ma_val, p))
 
     if not candidates:
         return None, None
 
     candidates.sort(key=lambda x: x[0], reverse=True)
-    _, p, exec_price = candidates[0]
-    return p, exec_price
+    ma_val, p = candidates[0]
+    return p, ma_val
 
 
 def find_ma_tp_close(row, entry):
-    """
-    收盘距离止盈，基于收盘价：
-    1. 均线在开仓价下方，且开仓价距均线 > MA_TP_ENABLE_MIN_DIST；
-    2. 收盘价距均线 <= MA_TP_DIST。
-    """
     candidates = []
     for p in MA_TP_LIST:
         ma_val = row.get(f"ma{p}", np.nan)
@@ -419,16 +372,6 @@ for i in range(len(df)):
 
         if reason.startswith("第三类-3b") and not (open_price < ma180_sig):
             pending_open = None
-
-        elif reason.startswith("第一类-1A") and DEATH_CROSS_1A_IGNORE_RESISTANCE:
-            if not pass_ma180_filters(sig_i, open_price):
-                pending_open = None
-
-        elif reason.startswith("第一类-1A"):
-            if not pass_ma180_filters(sig_i, open_price):
-                pending_open = None
-            elif not pass_ma_tp_distance_filter(sig_i, open_price):
-                pending_open = None
 
         elif not pass_prev_kline_filter(sig_i):
             pending_open = None
@@ -543,18 +486,22 @@ for i in range(len(df)):
         pos = position
         entry = pos["entry"]
 
+        # 1) 真金叉平空
         if row["golden_cross"]:
             pending_close = ("金叉平空", i, np.nan, None)
 
+        # 2) 新增：持仓K线长下影 + 距MA99不远，形态止损
         elif (not pd.isna(row["ma99"]) and
               abs(row["close"] - row["ma99"]) / row["close"] <= HOLD_MA99_NEAR_TH and
               row["lower_shadow_pct"] >= HOLD_LONG_LOWER_SHADOW_TH):
             pending_close = ("持仓K线长下影止损", i, np.nan, None)
 
+        # 3) 阳线收盘 > MA21 × (1+X%) 止损
         elif (not pd.isna(row["ma21"]) and row["is_bull"] and
               row["close"] > row["ma21"] * (1 + BULL_BREAK_MA21_PCT)):
             pending_close = ("阳线破MA21止损", i, np.nan, None)
 
+        # 4) 阳线破 MA10 未破 MA21 + MA10<MA21 + 均线收缩
         elif (not pd.isna(row["ma10"]) and not pd.isna(row["ma21"]) and
               row["is_bull"] and
               row["close"] > row["ma10"] and
@@ -563,12 +510,14 @@ for i in range(len(df)):
               row["ma10_21_shrink"] <= MA_SHRINK_TH):
             pending_close = ("阳线破MA10均线收缩止损", i, np.nan, None)
 
+        # 5) 即将金叉止损
         elif (not pd.isna(row["ma10"]) and not pd.isna(row["ma21"]) and
               row["close"] > row["ma10"] and
               row["close"] > row["ma21"] and
               row["ma10"] <= row["ma21"]):
             pending_close = ("即将金叉止损", i, np.nan, None)
 
+        # 6) 通用均线距离止盈
         else:
             tp_period, tp_ma_value = find_ma_tp_close(row, entry)
             if tp_period is not None:

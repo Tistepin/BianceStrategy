@@ -1,6 +1,6 @@
 def xianhuo4():
-    original_value = 9948.09 # 原始值
-    new_value = 8794.49  # 新值
+    original_value = 78200 # 原始值
+    new_value = 76408.5  # 新值
 
     # 计算差值
     difference = original_value - new_value
@@ -14,7 +14,7 @@ def xianhuo4():
     print(f"下降值: {difference:.3f}")
     print(f"跌幅:   {decline_percentage:.2f}%")
 
-    leverage = 25
+    leverage = 5
     print(f"收益:   {decline_percentage * leverage:.2f}%")
 
 

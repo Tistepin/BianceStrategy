@@ -11,10 +11,10 @@ import os
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-fileName = "BTCUSDT_futures_3d.csv"
+fileName = "BTCUSDT_3D_merged.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BTCUSDT_futures_3d.csv"
+    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\MergedData\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
 LEVERAGE = 5.0
