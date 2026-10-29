@@ -62,3 +62,14 @@ df["entity_pct"] = (df["open"] - df["close"]) / df["open"]
 
 # 下影线幅度
 df["lower_shadow_pct"] = (df["close"] - df["low"]) / df["close"]
+
+
+# 实体 / 下影比例：下影为 0 时视为无穷大（收盘就是最低）
+df["entity_ratio"] = np.where(
+    df["lower_shadow_pct"] > 0,
+    df["entity_pct"] / df["lower_shadow_pct"],
+    np.inf
+)
+
+# 上影幅度：high 到 max(open, close) 的距离
+_upper_base = df[["open", "close"]].max(axis=1)
