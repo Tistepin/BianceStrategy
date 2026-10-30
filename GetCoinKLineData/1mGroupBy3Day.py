@@ -79,3 +79,8 @@ print(final_df[final_df['time'] < '2020-01-01'].tail(2).to_string(index=False))
 
 print("\n--- 2020 年的第 1 根（从 1月1日 8点重新开始）---")
 print(final_df[final_df['time'] >= '2020-01-01'].head(1).to_string(index=False))
+
+
+if __name__ == '__main__':
+    FIRST_YEAR = 2019  # 哪一年用自定义起点
+    FIRST_YEAR_START = '2019-03-10'  # 这一年第一根 3 日 K 线的起始日

@@ -240,7 +240,7 @@ def main():
 
 
 if __name__ == "__main__":
-    symbols_set = { "SOL","BNB","XRP","TRX","ZEC","HYPE","DOGE","LINK","XLM","ADA","UNI","NEAR","BCH","DOT","AVAX","TAO","ENA","SHIB","PUMP","QNT","AAVE",
+    symbols_set = { "SOL","BNB","XRP","TRX","ZEC","HYPE","DOGE","LINK","XLM","ADA","UNI","NEAR","BCH","DOT","TAO","ENA","SHIB","QNT",
                    "1000PEPE","EVAA"
 
                     }
