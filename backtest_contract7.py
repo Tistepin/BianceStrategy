@@ -8,6 +8,19 @@ import os
 # 🛡️ 修复：拒绝空头趋势下的弱势贴脸买入，强制要求均线拐头向上
 # 🌟 终极修复：新增“全K线悬空突破”豁免权，绝不错杀 2020-10-18 完美起爆点
 # 🚧 新增防线：上方长线均线压制检测，拒绝 2022-02-27 这种“撞墙单”  最终版
+
+# 5x
+# 初始资金: 10000.00 USDT
+# 最终资金: 539630.84 USDT
+# 总收益率: 5296.31%
+# 总交易次数: 24 笔
+
+# ====================== 10x ============================
+# 初始资金: 10000.00 USDT
+# 最终资金: 2857359.03 USDT
+# 总收益率: 28473.59%
+# 总交易次数: 24 笔
+# ==================================================
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
@@ -18,7 +31,7 @@ if not os.path.exists(DATA_PATH):
     DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 5.0
+LEVERAGE = 10
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005
@@ -66,7 +79,7 @@ df['is_bull'] = df['close'] > df['open']
 # 计算上影线比例
 df['upper_shadow_pct'] = (df['high'] - df['close']) / df['close']
 # 计算实体涨幅
-df['body_pct'] = (df['close'] - df['open']) / df['close']
+df['body_pct'] = (df['close'] - df['open']) / df['open']
 
 # 🚨 核心逻辑：实体涨幅必须大于等于 上影线比例 * 倍数，且上影线本身不能超过设定的阈值
 df['is_body_strong'] = df['body_pct'] >= (df['upper_shadow_pct'] * BODY_SHADOW_MULTIPLIER)

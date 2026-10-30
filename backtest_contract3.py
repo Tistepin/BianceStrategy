@@ -4,14 +4,19 @@ import os
 
 # =====================================================================
 # 🎯 策略说明：均线多头/即将金叉 + 强势回踩/追多策略
-# 包含：阻力位止盈、死叉平仓、断头铡刀、即将金叉开关
+# 包含：阻力位止盈、死叉平仓、断头铡刀、即将金叉开关   第一版  以BTC为基准的多单逻辑
+# 初始资金: 10000.00 USDT
+# 最终资金: 424943.38 USDT
+# 总收益率: 4149.43%
+# 总交易次数: 32 笔
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-fileName = "BTCUSDT_3D_merged.csv"
+CoinName="BTC"
+fileName = f"{CoinName}USDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\MergedData\{fileName}"
+    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
 LEVERAGE = 5.0

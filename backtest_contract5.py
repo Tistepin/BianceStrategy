@@ -8,17 +8,18 @@ import os
 # 🛡️ 修复：拒绝空头趋势下的弱势贴脸买入，强制要求均线拐头向上
 # 🌟 终极修复：新增“全K线悬空突破”豁免权，绝不错杀 2020-10-18 完美起爆点
 # 🚧 新增防线：上方长线均线压制检测，拒绝 2022-02-27 这种“撞墙单”  最终版
+#  5 和7 比没有什么 区别  最大差别就是 上影线分母 5 是 最高价 7是开盘价 7是正常的
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-CoinName="PUMP"
+CoinName="BTC"
 fileName = f"{CoinName}USDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
+    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 5.0
+LEVERAGE = 5
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005

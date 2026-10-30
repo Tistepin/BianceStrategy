@@ -4,28 +4,37 @@ import requests
 import pandas as pd
 import os
 from datetime import datetime, timezone
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from requests.exceptions import SSLError, ConnectionError as ReqConnectionError
+
 
 # ===== 参数 =====
-SYMBOL = "DOTUSDT"  # 币种
-INTERVAL = "1m"  # 周期
+INTERVAL = "1m"
 BASE_URL = "https://fapi.binance.com"
 URL = f"{BASE_URL}/fapi/v1/klines"
 LIMIT = 1500
 
-# 每次请求间隔（按月抓，请求量不大，0.2秒很安全）
-SLEEP_BETWEEN_REQUESTS = 0.2
+SLEEP_BETWEEN_REQUESTS = 0.3
 WEIGHT_WARN_RATIO = 0.8
 
-# 路径参数配置
 BASE_SAVE_DIR = r"D:\Python\BianceStrategy\re\BianceData"
 
-# 设置起始时间（2019年11月27日）
 START_YEAR = 2019
-START_MONTH = 11
+START_MONTH = 1
 START_DAY = 27
 
-# 计算当前时间，作为抓取的终点
-NOW = datetime.now(timezone.utc)
+# 全局 Session，复用连接，减少 TLS 握手
+SESSION = requests.Session()
+RETRY_STRATEGY = Retry(
+    total=5,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+)
+ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY, pool_connections=10, pool_maxsize=10)
+SESSION.mount("https://", ADAPTER)
+SESSION.mount("http://", ADAPTER)
 
 
 def interval_to_ms(s: str) -> int:
@@ -68,15 +77,29 @@ def get_used_weight(resp):
 STEP_MS = interval_to_ms(INTERVAL)
 
 
-def fetch_month_data(year, month, start_ms, end_ms):
-    """抓取指定时间段的数据并返回 DataFrame"""
+def get_valid_futures_symbols():
+    try:
+        r = SESSION.get(f"{BASE_URL}/fapi/v1/exchangeInfo", timeout=30)
+        r.raise_for_status()
+        data = r.json()
+        return {
+            s["symbol"]
+            for s in data["symbols"]
+            if s.get("contractType") == "PERPETUAL" and s.get("status") == "TRADING"
+        }
+    except Exception as e:
+        print(f"[校验] 获取有效符号列表失败：{e}，跳过校验")
+        return None
+
+
+def fetch_month_data(symbol, year, month, start_ms, end_ms):
     all_rows = []
     start = start_ms
     consecutive_418 = 0
 
     while start < end_ms:
         params = {
-            "symbol": SYMBOL,
+            "symbol": symbol,
             "interval": INTERVAL,
             "startTime": start,
             "limit": LIMIT,
@@ -85,7 +108,12 @@ def fetch_month_data(year, month, start_ms, end_ms):
         data = None
         for attempt in range(8):
             try:
-                r = requests.get(URL, params=params, timeout=30)
+                r = SESSION.get(URL, params=params, timeout=30)
+            except (SSLError, ReqConnectionError) as e:
+                wait = min(60, (2 ** attempt) + random.uniform(0, 1))
+                print(f"  [SSL/连接异常] {e}，{wait:.1f}s 后重试")
+                time.sleep(wait)
+                continue
             except Exception as e:
                 wait = min(60, (2 ** attempt) + random.uniform(0, 1))
                 print(f"  [网络异常] {e}，{wait:.1f}s 后重试")
@@ -116,6 +144,9 @@ def fetch_month_data(year, month, start_ms, end_ms):
                 print(f"  [HTTP {r.status_code}] 服务端错误，{wait:.1f}s 后重试")
                 time.sleep(wait)
                 continue
+
+            if r.status_code == 400:
+                raise RuntimeError(f"Invalid symbol {symbol}，响应：{r.text[:200]}")
 
             if 400 <= r.status_code < 500:
                 print(f"  [HTTP {r.status_code}] 请求错误，响应：{r.text[:200]}")
@@ -153,7 +184,6 @@ def fetch_month_data(year, month, start_ms, end_ms):
     if not all_rows:
         return None
 
-    # 整理数据
     columns = [
         "open_time", "open", "high", "low", "close", "volume",
         "close_time", "quote_volume", "count",
@@ -169,69 +199,69 @@ def fetch_month_data(year, month, start_ms, end_ms):
     for c in numeric_cols:
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
-    # 时间转换（保留 UTC 和 北京时间）
     df["datetime_utc"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
     df["datetime"] = df["datetime_utc"].dt.tz_convert("Asia/Shanghai").dt.tz_localize(None)
 
-    # 严格过滤掉超出本月范围的数据（API 可能多返回）
     df = df[df["open_time"] < end_ms]
 
-    cols = ["datetime", "open_time", "datetime_utc"] + [c for c in df.columns if
-                                                        c not in ["datetime", "open_time", "datetime_utc"]]
+    cols = ["datetime", "open_time", "datetime_utc"] + [
+        c for c in df.columns if c not in ["datetime", "open_time", "datetime_utc"]
+    ]
     return df[cols]
 
 
-# ================= 主循环：逐月抓取 =================
-def main():
+def month_file_path(symbol, interval, year, month):
+    target_dir = os.path.join(BASE_SAVE_DIR, symbol, interval)
+    os.makedirs(target_dir, exist_ok=True)
+    return os.path.join(target_dir, f"{symbol}_{interval}_futures_{year}-{month:02d}.csv")
+
+
+def month_file_ok(path):
+    return os.path.exists(path) and os.path.getsize(path) > 100
+
+
+def run_symbol(symbol):
+    """抓取单个币种的全部历史数据，支持断点续抓"""
+    now = datetime.now(timezone.utc)
     current_year = START_YEAR
     current_month = START_MONTH
 
-    # 循环直到超过当前时间
     while True:
-        # 计算这个月的起止时间
-        month_start = datetime(current_year, current_month, 1, tzinfo=timezone.utc)
-
-        # 如果是 2019 年 11 月，特殊处理起始日
         if current_year == 2019 and current_month == 11:
             month_start = datetime(2019, 11, 27, 0, 0, 0, tzinfo=timezone.utc)
+        else:
+            month_start = datetime(current_year, current_month, 1, tzinfo=timezone.utc)
 
-        # 计算下个月 1 号作为结束时间
         if current_month == 12:
             next_month_start = datetime(current_year + 1, 1, 1, tzinfo=timezone.utc)
         else:
             next_month_start = datetime(current_year, current_month + 1, 1, tzinfo=timezone.utc)
 
-        # 如果这个月的起始时间已经超过当前时间，说明抓完了，退出
-        if month_start >= NOW:
-            print("所有历史数据已抓取完毕！")
+        if month_start >= now:
+            print(f"[{symbol}] 所有历史数据已抓取完毕")
             break
 
-        # 如果下个月的时间超过了当前时间，就把结束时间截断到当前时间
-        end_time = min(next_month_start, NOW)
-
-        # 格式化月份字符串
+        end_time = min(next_month_start, now)
         month_str = f"{current_year}-{current_month:02d}"
-        print(f"\n[{month_str}] 开始抓取.{SYMBOL}. 范围：{month_start.strftime('%Y-%m-%d')} 到 {end_time.strftime('%Y-%m-%d')}")
 
-        start_ms = int(month_start.timestamp() * 1000)
-        end_ms = int(end_time.timestamp() * 1000)
+        out_file = month_file_path(symbol, INTERVAL, current_year, current_month)
+        is_current_month = (next_month_start > now)
 
-        # 抓取数据
-        df = fetch_month_data(current_year, current_month, start_ms, end_ms)
-
-        if df is not None and not df.empty:
-            # 创建目录
-            target_dir = os.path.join(BASE_SAVE_DIR, SYMBOL, INTERVAL)
-            os.makedirs(target_dir, exist_ok=True)
-
-            # 保存文件：ETHUSDT_1m_futures_2019-11.csv
-            out_file = os.path.join(target_dir, f"{SYMBOL}_{INTERVAL}_futures_{month_str}.csv")
-            df.to_csv(out_file, index=False, encoding="utf-8-sig")
-            print(f"[{month_str}] 保存成功！总条数: {len(df)}，文件：{out_file}")
+        if month_file_ok(out_file) and not is_current_month:
+            print(f"[{month_str}] 已存在，跳过：{out_file}")
         else:
-            print(f"[{month_str}] 无数据。")
+            print(f"\n[{month_str}] 开始抓取 {symbol}. 范围：{month_start.strftime('%Y-%m-%d')} 到 {end_time.strftime('%Y-%m-%d')}")
+            start_ms = int(month_start.timestamp() * 1000)
+            end_ms = int(end_time.timestamp() * 1000)
 
-        # 月份加 1
+            df = fetch_month_data(symbol, current_year, current_month, start_ms, end_ms)
+
+            if df is not None and not df.empty:
+                df.to_csv(out_file, index=False, encoding="utf-8-sig")
+                print(f"[{month_str}] 保存成功！总条数: {len(df)}，文件：{out_file}")
+            else:
+                print(f"[{month_str}] 无数据。")
+
         if current_month == 12:
             current_year += 1
             current_month = 1
@@ -240,10 +270,27 @@ def main():
 
 
 if __name__ == "__main__":
-    symbols_set = { "SOL","BNB","XRP","TRX","ZEC","HYPE","DOGE","LINK","XLM","ADA","UNI","NEAR","BCH","DOT","TAO","ENA","SHIB","QNT",
-                   "1000PEPE","EVAA"
+    symbols_set = {
+        "SOL", "BNB", "XRP", "TRX", "ZEC", "DOGE", "LINK",
+        "XLM", "ADA", "UNI", "NEAR", "BCH", "DOT", "TAO", "ENA",
+        "1000SHIB", "QNT", "1000PEPE"
+    }
 
-                    }
-    for symbol in symbols_set:
-        SYMBOL=symbol+"USDT"
-        main()
+    valid_symbols = get_valid_futures_symbols()
+    if valid_symbols:
+        print(f"Binance Futures 当前有效永续合约共 {len(valid_symbols)} 个")
+
+    for base_symbol in symbols_set:
+        full_symbol = base_symbol + "USDT"
+
+        if valid_symbols and full_symbol not in valid_symbols:
+            print(f"\n跳过 {full_symbol}：不是 Binance Futures 有效永续合约")
+            continue
+
+        print(f"\n========== 开始处理 {full_symbol} ==========")
+        try:
+            run_symbol(full_symbol)
+        except Exception as e:
+            print(f"{full_symbol} 抓取失败：{e}")
+            print("继续下一个币种...")
+            continue

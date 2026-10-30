@@ -6,17 +6,24 @@ import os
 # 🎯 策略说明：均线多头/即将金叉 + 强势回踩/追多策略
 # 🚀 核心过滤：动态实体-影线比例 + 全K线悬空突破 + 上方长线压制检测
 # 💰 止盈体系：本金盈利 30% 基本止盈 + 自动复利 + 动态阻力止盈
-# 🛡️ 终极防线：熊市天花板拦截 + 假反转贴脸拦截 + 只做实体涨幅 > 5% 的硬阳线
+# 🛡️ 终极防线：熊市天花板拦截 + 假反转贴脸拦截 + 只做实体涨幅 > 5% 的硬阳线 增加了 固定 30%止盈的 不能用 10x 5x收益率会高一点
+
+# 初始资金: 10000.00 USDT  5x
+# 最终资金: 74325.24 USDT
+# 总收益率: 643.25%
+# 总交易次数: 34 笔
+
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-fileName = "BTCUSDT_3D_merged.csv"
+CoinName="BTC"
+fileName = f"{CoinName}USDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\BTC\MergedData\{fileName}"
+    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 10.0
+LEVERAGE = 5
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005

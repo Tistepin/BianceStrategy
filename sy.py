@@ -1,6 +1,6 @@
 def xianhuo4():
-    original_value = 2472.74  # 原始值
-    new_value = 2388.11   # 新值
+    original_value = 81308.9  # 原始值
+    new_value =77962.6   # 新值
 
     # 计算差值
     difference = original_value - new_value

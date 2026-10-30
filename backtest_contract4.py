@@ -4,17 +4,28 @@ import os
 
 # =====================================================================
 # 🎯 策略说明：均线多头/即将金叉 + 强势回踩/追多策略
-# 🚀 新增：动态实体-影线比例过滤（实体涨幅必须 >= 上影线幅度的 N 倍）
+# 🚀 新增：动态实体-影线比例过滤（实体涨幅必须 >= 上影线幅度的 N 倍） 跟7对比就是没有增加 很多防线的逻辑
+# 初始资金: 10000.00 USDT  5x
+# 最终资金: 870465.86 USDT
+# 总收益率: 8604.66%
+# 总交易次数: 29 笔
+
+# 初始资金: 10000.00 USDT   10x
+# 最终资金: 6884988.41 USDT
+# 总收益率: 68749.88%
+# 总交易次数: 29 笔
+
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-fileName = "BTCUSDT_3D_merged.csv"
+CoinName="BTC"
+fileName = f"{CoinName}USDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\MergedData\{fileName}"
+    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 5.0
+LEVERAGE = 10
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005
@@ -60,7 +71,7 @@ for ma in LOOKBACK_MA:
 df['is_bull'] = df['close'] > df['open']
 
 # 计算上影线比例
-df['upper_shadow_pct'] = (df['high'] - df['close']) / df['high']
+df['upper_shadow_pct'] = (df['high'] - df['close']) / df['close']
 # 计算实体涨幅
 df['body_pct'] = (df['close'] - df['open']) / df['open']
 
