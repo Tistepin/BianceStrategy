@@ -19,19 +19,20 @@ import os
 # 初始资金: 10000.00 USDT
 # 最终资金: 2857359.03 USDT
 # 总收益率: 28473.59%
-# 总交易次数: 24 笔
+# 总交易次数: 24 笔   最终版 这个只适合 btc eth 这种大宗币种
 # ==================================================
 # =====================================================================
 
 # ================= 1. 参数与基础设置 =================
-CoinName="SOL"
-fileName = f"{CoinName}USDT_futures_3d.csv"
+CoinName="AVAX"
+fileName = f"{CoinName}USDT_futures_1w.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\3d\{fileName}"
+    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\1w\{fileName}"
+
 
 INITIAL_CAPITAL = 10000.0
-LEVERAGE = 10
+LEVERAGE = 5
 POSITION_SIZE_PCT = 0.33
 FEE_RATE = 0.0004
 SLIPPAGE = 0.0005

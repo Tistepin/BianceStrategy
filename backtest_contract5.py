@@ -363,7 +363,7 @@ if len(trade_records) > 0:
     pd.set_option('display.width', 1000)
     print(records_df.to_string(index=False))
 
-    csv_save_path = "trade_records.csv"
+    csv_save_path = "trade_records1.csv"
     records_df.to_csv(csv_save_path, index=False, encoding='utf-8-sig')
     print(f"\n📁 完整的交易记录已保存为当前目录下的: {csv_save_path}")
 else:

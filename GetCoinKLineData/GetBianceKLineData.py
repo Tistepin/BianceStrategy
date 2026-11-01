@@ -271,9 +271,10 @@ def run_symbol(symbol):
 
 if __name__ == "__main__":
     symbols_set = {
-        "SOL", "BNB", "XRP", "TRX", "ZEC", "DOGE", "LINK",
-        "XLM", "ADA", "UNI", "NEAR", "BCH", "DOT", "TAO", "ENA",
-        "1000SHIB", "QNT", "1000PEPE"
+        # "SOL", "BNB", "XRP", "TRX", "ZEC", "DOGE", "LINK",
+        # "XLM", "ADA", "UNI", "NEAR", "BCH", "DOT", "TAO", "ENA",
+        # "1000SHIB", "QNT", "1000PEPE"
+        "DYDX","SUI","IDO","XMR","FIL","ARB","LTC","INJ","TIA","ZRO","RUNE","SAND"
     }
 
     valid_symbols = get_valid_futures_symbols()

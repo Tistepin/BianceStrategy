@@ -84,8 +84,11 @@ def main ( a):
 
 if __name__ == '__main__':
     symbols_set = {
-        "SOL", "BNB", "XRP", "TRX", "ZEC", "HYPE", "DOGE", "LINK", "XLM", "ADA",
-        "UNI", "NEAR", "BCH", "DOT", "TAO", "ENA", "1000SHIB", "QNT", "1000PEPE", "EVAA"
+        # "SOL", "BNB", "XRP", "TRX", "ZEC", "HYPE", "DOGE", "LINK", "XLM", "ADA",
+        # "UNI", "NEAR", "BCH", "DOT", "TAO", "ENA", "1000SHIB", "QNT", "1000PEPE", "EVAA",
+
+        # "DYDX","SUI","IDO","XMR","FIL","ARB","LTC","INJ","TIA","ZRO","RUNE","SAND"
+        "AVAX"
     }
     for symbol in symbols_set:
         main(symbol)

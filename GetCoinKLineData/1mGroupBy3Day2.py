@@ -8,17 +8,17 @@ symbols_set = {
     # "SOL", "BNB", "XRP", "TRX", "ZEC", "HYPE", "DOGE", "LINK", "XLM", "ADA",
     # "UNI", "NEAR", "BCH", "DOT", "AVAX", "TAO", "ENA", "1000SHIB", "PUMP",
     # "QNT", "AAVE", "1000PEPE", "EVAA"
-"SOL"
+    "AVAX"
 }
 
 # 全局起始日：早于这个日期的数据全部丢弃（对所有年份、所有币种生效）
-GLOBAL_START_DATE = '2020-9-15'
+GLOBAL_START_DATE = '2020-9-24'
 
 # 按年覆盖锚点：只影响指定年份，一般用不到，留空即可
 # 如果真的想给某一年单独设锚点（而不是全局起点），才填这里
 ANCHOR_OVERRIDE = {}
 
-BASE_DIR = r"F:\Python\BianceStrategy\re\BianceData"
+BASE_DIR = r"D:\Python\BianceStrategy\re\BianceData"
 
 
 def get_anchor(year):
