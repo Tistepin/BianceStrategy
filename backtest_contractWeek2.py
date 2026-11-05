@@ -12,7 +12,7 @@ CoinName="BTC"
 fileName = f"{CoinName}USDT_futures_1w.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):
-    DATA_PATH = rf"D:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\1w\{fileName}"
+    DATA_PATH = rf"F:\Python\BianceStrategy\re\BianceData\{CoinName}USDT\1w\{fileName}"
 
 INITIAL_CAPITAL = 10000.0
 LEVERAGE = 5.0
