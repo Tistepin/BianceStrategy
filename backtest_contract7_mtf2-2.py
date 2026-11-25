@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 # ================= 1. 参数与基础设置 =================
-CoinName = "BTC"
+CoinName = "DOGE"
 fileName = f"{CoinName}USDT_futures_3d.csv"
 DATA_PATH = rf"re\{fileName}"
 if not os.path.exists(DATA_PATH):

@@ -103,7 +103,7 @@ ENABLE_GOLDEN_CROSS_CHASE = True
 # =====================================================================
 DAILY_STOP_ENABLED      = True      # 日线长均线止损总开关
 DAILY_STOP_PERIODS      = [99, 120, 180, 365]   # 用哪几条日线均线
-DAILY_STOP_MODE         = "close"  # "intraday"=日线 low 触及 MA99/120/180/365 即止损【按要求默认】; "close"=日线收盘跌破、下一根日线开盘止损
+DAILY_STOP_MODE         = "intraday"  # "intraday"=日线 low 触及 MA99/120/180/365 即止损【按要求默认】; "close"=日线收盘跌破、下一根日线开盘止损
 # 🛡️ 止损均线必须位于 MA10 与 MA21 之下，才是有效的下方支撑止损线
 #    （多头排列 MA10 > MA21 > MA99/120/180/365 时才成立；空头排列里长均线在
 #      MA21 上方，说明结构已坏，那条线不能当支撑止损用）

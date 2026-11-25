@@ -25,10 +25,6 @@
 #    ⚠️ 单币单窗口 29 笔，样本很小；换币/换周期需重新验证。
 #    开关全关（DAILY_STOP_ENABLED=False, TP_USE_DAILY_MA=False,
 #            TP_USE_3D_MA_INTRADAY=False）时，本文件与 contract7 完全一致（已回归校验）。
-#
-#    🆕 本次修改：日线止损必须同时在 3日线 MA10 和 MA21 下方才生效
-#        （close 模式：日线收盘价同时跌破长均线 DMA + 3日线 MA10 + 3日线 MA21 才挂单；
-#          intraday 模式：日线 low 同时触及三条线才止损）
 # =====================================================================
 
 import pandas as pd
@@ -99,7 +95,6 @@ ENABLE_GOLDEN_CROSS_CHASE = True
 # =====================================================================
 # 🆕 多周期（日线）模块
 #    日线止损：持仓期间，价格下方的日线 MA99/120/180/365 被跌破即止损
-#    🆕 且必须同时在 3日线 MA10、MA21 下方才生效（短期结构也要走坏）
 #    日线止盈：把日线 MA99/120/180/365 也当作上方阻力，与原有 3 日线阻力一起取最近的一条
 #    ✅ 开关全关时，本文件与 backtest_contract7.py 完全一致（已回归校验）
 # =====================================================================
@@ -307,7 +302,6 @@ for i in range(1, len(df)):
         # =================================================================
         # 🆕 日线多周期层：早于 3 日线收盘判断，按日线逐根检查
         #    ① 日线止损：取「日线开盘价下方最近的一条 DMA」，触发方式见 DAILY_STOP_MODE
-        #       🆕 且必须同时在 3日线 MA10、MA21 下方才生效
         #    ② 日线止盈：取「日线开盘价上方最近的一条 DMA」，high 触及即止盈
         #    ③ 同一根日线两者都成立 → 默认止损优先（保守）
         # =================================================================
@@ -344,24 +338,13 @@ for i in range(1, len(df)):
                 d_tp, d_tp_name = (min(_cands, key=lambda x: x[0]) if _cands else (None, None))
 
                 # ③ 触发判定
-                # 🆕 日线止损必须同时在 3日线 MA10、MA21 下方才生效
-                _ma10_val = row['MA10']
-                _ma21_val = row['MA21']
-                _ma10_broken_c = (not pd.isna(_ma10_val)) and (d_c < _ma10_val)
-                _ma21_broken_c = (not pd.isna(_ma21_val)) and (d_c < _ma21_val)
-                _ma10_hit_i    = (not pd.isna(_ma10_val)) and (d_l <= _ma10_val)
-                _ma21_hit_i    = (not pd.isna(_ma21_val)) and (d_l <= _ma21_val)
-
                 if d_stop is not None and DAILY_STOP_MODE == "close":
-                    # 日线收盘确认：跌破长均线 DMA 且同时跌破 3日线 MA10、MA21
-                    if d_c < d_stop and _ma10_broken_c and _ma21_broken_c:
+                    if d_c < d_stop:                     # 日线收盘确认跌破
                         daily_close_stop = (d_stop, d_stop_p)
                         break
                     s_hit = False
                 else:
-                    # 盘中触及：日线 low 同时 ≤ DMA、≤ 3日线 MA10、≤ 3日线 MA21
-                    s_hit = (d_stop is not None and d_l <= d_stop
-                             and _ma10_hit_i and _ma21_hit_i)
+                    s_hit = d_stop is not None and d_l <= d_stop
 
                 t_hit = d_tp is not None and d_h >= d_tp
 
